@@ -1,0 +1,4 @@
+#! /bin/bash
+rm statik/*
+go generate -v
+go build -o selector main.go
