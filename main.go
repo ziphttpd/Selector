@@ -117,6 +117,15 @@ func getCatalog(c echo.Context) error {
 
 // zhget の実行
 func registDoc(c echo.Context) error {
+	const tokenHeader = "X-Requested-With" // パスワードのヘッダ
+	// 独自ヘッダの確認
+	password := c.Request().Header.Get(tokenHeader)
+	if password == "" || false == verify(password) {
+		// 不正なリクエスト
+		mes := "need header X-Requested-With"
+		return c.String(http.StatusBadRequest, mes)
+	}
+
 	params, err := c.FormParams()
 	if err != nil {
 		fmt.Printf("err:%s", err)
@@ -128,6 +137,12 @@ func registDoc(c echo.Context) error {
 		return err
 	}
 	return c.Blob(http.StatusOK, "text/html", nil)
+}
+
+// パスワードチェック
+func verify(password string) bool {
+	// TODO: password.json の "selector" キー
+	return true
 }
 
 // zhget

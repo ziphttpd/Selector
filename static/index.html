@@ -16,8 +16,12 @@ class Repository {
 	list() {
 		return wget("/api/list");
 	}
-	regist(site,group) {
-		return send("/api/v1/regist/"+site);
+	regist(site, group) {
+		// TODO: パスワード入力
+		const password = "password";
+		return wpost("/api/regist/"
+			, {"X-Requested-With": password}
+			, {"site":site, "group":group});
 	}
 	wget(path) {
 		return new Promise(function(callback,onerror) {
@@ -34,8 +38,34 @@ class Repository {
 							break;
 					}
 				}
-				xhr.send();
 			}
+			xhr.send();
+		});
+	}
+	wpost(path, headerData, formData) {
+		return new Promise(function(callback,onerror) {
+			const xhr=new XMLHttpRequest();
+			xhr.open("POST", path);
+			for (key in headerData.Keys()) {
+				xhr.setRequestHeader(key, headerData[key]);
+			}
+			xhr.onreadystatechange=function() {
+				if(xhr.readyState==4) {
+					switch(xhr.status) {
+						case 200:	// OK
+							callback(xhr.response);
+							break;
+						default:
+							onerror(xhr.response);
+							break;
+					}
+				}
+			}
+			const form = new FormData();
+			for (key in formData.keys()) {
+				form.append(key, formData[key]);
+			}
+			xhr.send(form);
 		});
 	}
 }
