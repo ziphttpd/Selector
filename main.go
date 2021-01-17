@@ -14,6 +14,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/rakyll/statik/fs"
+	"github.com/xorvercom/util/pkg/json"
 
 	// go generate -v で作成すること
 	_ "github.com/ziphttpd/Selector/statik"
@@ -120,7 +121,7 @@ func registDoc(c echo.Context) error {
 	const tokenHeader = "X-Requested-With" // パスワードのヘッダ
 	// 独自ヘッダの確認
 	password := c.Request().Header.Get(tokenHeader)
-	if password == "" || false == verify(password) {
+	if password == "" || false == passwordCheck(password) {
 		// 不正なリクエスト
 		mes := "need header X-Requested-With"
 		return c.String(http.StatusBadRequest, mes)
@@ -131,6 +132,8 @@ func registDoc(c echo.Context) error {
 		fmt.Printf("err:%s", err)
 		return err
 	}
+
+	// ドキュメントのダウンロードの登録
 	err = zhget(params.Get("host"), params.Get("group"))
 	if err != nil {
 		fmt.Printf("err:%s", err)
@@ -139,9 +142,21 @@ func registDoc(c echo.Context) error {
 	return c.Blob(http.StatusOK, "text/html", nil)
 }
 
-// パスワードチェック
-func verify(password string) bool {
-	// TODO: password.json の "selector" キー
+// パスワードチェック (password.json に selector のパスワードがない場合にもＯＫ)
+func passwordCheck(password string) bool {
+	j, err := json.LoadFromJSONFile(fpath.Join(*dir, "password.json"))
+	if err != nil {
+		fmt.Printf("err:%s", err)
+		return true
+	}
+	if jo, ok := j.AsObject(); ok {
+		if js, ok := jo.Child("selector").AsString(); ok {
+			if js.Text() != password {
+				// パスワードが設定されている場合のみＮＧ
+				return false
+			}
+		}
+	}
 	return true
 }
 
