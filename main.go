@@ -64,7 +64,9 @@ func main() {
 	}
 
 	echoInst := echo.New()
+	echoInst.HideBanner = true
 	echoInst.Use(middleware.CORS())
+	echoInst.Use(middleware.Logger())
 
 	// トップページ
 	echoInst.GET("/", topPage)
