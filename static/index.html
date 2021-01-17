@@ -8,18 +8,25 @@
 	<meta name="viewport" content="width=device-width,initial-scale=1">
 	<title>ZipHttpd document selector</title>
 	<link rel="icon" href="./static/favicon.ico">
-	<link type="text/css" rel="stylesheet" href="./static/sign.css" />
+	<link type="text/css" rel="stylesheet" href="./static/common.css" />
 
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+	<script type="text/javascript" src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+	
 	<script src="./static/CompElem.js"></script>
 <script>
 class Repository {
 	list() {
-		return wget("/api/list");
+		return this.wget("/api/list");
+	}
+	catalog(site) {
+		return this.wget("/api/catalog/" + site);
 	}
 	regist(site, group) {
 		// TODO: パスワード入力
 		const password = "password";
-		return wpost("/api/regist/"
+		return this.wpost("/api/regist/"
 			, {"X-Requested-With": password}
 			, {"site":site, "group":group});
 	}
@@ -70,6 +77,67 @@ class Repository {
 	}
 }
 </script>
+<script>
+	const repo = new Repository();
+function onload() {
+	const listelem = document.querySelector("#list");
+	repo.list().then(res =>{
+		obj = JSON.parse(res);
+		for (const site of obj.hosts) {
+			// ヘッダ
+			const siteh3 = document.createElement("h3");
+			siteh3.appendChild(document.createTextNode(site));
+			listelem.appendChild(siteh3);
+
+			// コンテンツ
+			const sitepan = document.createElement("div");
+			// コンテンツ - input
+			const hidd = document.createElement("input");
+			hidd.type = 'hidden';
+			hidd.name = "site";
+			hidd.value = site;
+			sitepan.appendChild(hidd);
+			// コンテンツ - div
+			const cont = document.createElement("div");
+			sitepan.appendChild(cont);
+
+			// コンテンツを入れるパネル
+			const contentspan = document.createElement("div");
+			contentspan.appendChild(sitepan);
+			listelem.appendChild(contentspan);
+		}
+		$('#list').accordion({
+			header: "h3",
+			create: function(event,ui) {
+				const pan = ui.panel.contents()[0];
+				setupCatalog(pan);
+			},
+			beforeActivate: function(event,ui) {
+				const pan = ui.newPanel.contents()[0];
+				setupCatalog(pan);
+			}
+		});
+	}).catch(res => {
+		console.log(res);
+	})
+}
+function setupCatalog(pan) {
+	const input = pan.querySelector("input[name=\"site\"]");
+	const cont = pan.querySelector("div");
+	repo.catalog(input.value)
+	.then(res =>{
+		cont.innerHTML = "<pre>" + res + "</pre>";
+		$('#list').accordion("refresh");
+	}).catch(res => {
+		console.log(res);
+	});
+}
+</script>
 </head>
-<h1>test</h1>
+<body onload="onload()">
+	<h1>ZipHttpd Document publish site list</h1>
+	<div id="list">
+		
+	</div>
+</body>
 </html>

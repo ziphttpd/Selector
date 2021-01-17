@@ -1,4 +1,4 @@
-// go:generate go run github.com/rakyll/statik -src=static
+// go:generate go run github.com/rakyll/statik -f -src=static
 package main
 
 import (
@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	fpath "path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -21,10 +22,24 @@ import (
 )
 
 var (
-	staticFs   http.FileSystem
-	dir        = flag.String("config", "", "configuration directory")
-	listenPort = flag.Int("port", 8822, "listen port")
-	command    string
+	staticFs    http.FileSystem
+	dir         = flag.String("config", "", "configuration directory")
+	listenPort  = flag.Int("port", 8822, "listen port")
+	contentType = map[string]string{
+		".html": "text/html",
+		".htm":  "text/html",
+		".js":   "text/javascript",
+		".json": "text/json",
+		".css":  "text/css",
+		".txt":  "text/plain",
+		".bmp":  "image/bmp",
+		".gif":  "image/gif",
+		".ico":  "image/ico",
+		".jpg":  "image/jpeg",
+		".png":  "image/png",
+		".svg":  "image/svg+xml",
+	}
+	command string
 )
 
 func main() {
@@ -91,7 +106,9 @@ func staticFile(c echo.Context) error {
 		fmt.Printf("err:%s", err)
 		return err
 	}
-	return c.Blob(http.StatusOK, "text/html", b)
+	ext := fpath.Ext(name)
+	ct := contentType[strings.ToLower(ext)]
+	return c.Blob(http.StatusOK, ct, b)
 }
 
 // サイト一覧

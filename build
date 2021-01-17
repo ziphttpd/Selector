@@ -1,4 +1,4 @@
 #! /bin/bash
-rm statik/*
-go generate -v
+#go generate -v
+go run github.com/rakyll/statik -f -src=static
 go build -o selector main.go
