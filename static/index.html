@@ -115,6 +115,9 @@ function onload() {
 			beforeActivate: function(event,ui) {
 				const pan = ui.newPanel.contents()[0];
 				setupCatalog(pan);
+			},
+			activate: function(event,ui) {
+				$('#list').accordion("refresh");
 			}
 		});
 	}).catch(res => {
