@@ -52,6 +52,15 @@ func main() {
 		*dir = fpath.Dir(exe)
 	}
 
+	// pidファイル作成
+	pidfile := fpath.Join(*dir, "selector.pid")
+	os.Remove(pidfile)
+	if pidf, err := os.Create(pidfile); err == nil {
+		fmt.Fprintf(pidf, "%d\n", os.Getpid())
+		pidf.Close()
+		defer os.Remove(pidfile)
+	}
+
 	staticFs, err = fs.New()
 	if err != nil {
 		fmt.Printf("err:%s", err)
