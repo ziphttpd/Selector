@@ -9,6 +9,8 @@ fi
 
 SCRIPT_DIR=$(cd $(dirname ${SCRIPT}); pwd)
 cd ${SCRIPT_DIR}
+
+git pull
 go run github.com/rakyll/statik -f -src=static
 go build -o ${TARGET_DIR}/selector main.go
 
