@@ -22,7 +22,7 @@ if not exist statik.exe go build -o statik.exe github.com/rakyll/statik
 statik -f -src=static
 go build -o %SOURCE% main.go
 
-if exist %TARGET%.old del /Y %TARGET%.old
+if exist %TARGET%.old del /F %TARGET%.old
 if exist %TARGET% ren %TARGET% %FILE%.old
 copy %SOURCE% %TARGET%
 
