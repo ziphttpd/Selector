@@ -23,7 +23,7 @@ statik -f -src=static
 go build -o %BUILDEXE% main.go
 
 if exist %TARGETEXE%.old del /F %TARGETEXE%.old
-if exist %TARGETEXE% ren %TARGETEXE% %EXEID%.old
+if exist %TARGETEXE% ren %TARGETEXE% %TARGETEXE%.old
 copy %BUILDEXE% %TARGETEXE%
 
 exit /B 0
